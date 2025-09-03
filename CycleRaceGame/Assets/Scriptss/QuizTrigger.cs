@@ -17,7 +17,6 @@ public class QuizTrigger : MonoBehaviour
             {
                 quizCanvas.SetActive(true); 
                 Time.timeScale = 0f; 
-                Debug.Log("Открылся Canvas викторины! Игра на паузе.");
             }
 
             triggered = true;
