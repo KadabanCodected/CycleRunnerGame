@@ -1,22 +1,29 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class QuizTrigger : MonoBehaviour
 {
     [Header("UI")]
-    public GameObject quizCanvas;
+    public GameObject quizCanvas;   // Панель с квизом
+    public GameObject speedPanel;   // Панель скорости (HUD)
 
     private bool triggered = false;
 
     private void OnTriggerEnter(Collider other)
     {
-        if (triggered) return; 
+        if (triggered) return;
 
-        if (other.CompareTag("Player")) 
+        if (other.CompareTag("Player"))
         {
             if (quizCanvas != null)
             {
-                quizCanvas.SetActive(true); 
-                Time.timeScale = 0f; 
+                quizCanvas.SetActive(true);
+                Time.timeScale = 0f; // стопаем игру
+            }
+
+            // 📌 Скрываем панель скорости, пока открыт квиз
+            if (speedPanel != null)
+            {
+                speedPanel.SetActive(false);
             }
 
             triggered = true;
