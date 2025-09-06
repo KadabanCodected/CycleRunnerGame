@@ -1,13 +1,19 @@
 ﻿using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class WinTrigger : MonoBehaviour
 {
     [SerializeField] private GameObject winPanel;
-    [SerializeField] private GameObject speedPanel; 
+    [SerializeField] private GameObject speedPanel;
     [SerializeField] private float fadeDuration = 1f;
+
+    [Header("Music Settings")]
+    [SerializeField] private AudioSource musicSource;
 
     private CanvasGroup canvasGroup;
     private bool isWin = false;
+
+    private const string VolumeKey = "MusicVolume";
 
     private void Start()
     {
@@ -20,6 +26,13 @@ public class WinTrigger : MonoBehaviour
                 canvasGroup = winPanel.AddComponent<CanvasGroup>();
 
             canvasGroup.alpha = 0f;
+        }
+
+        // при старте выставляем громкость из сохранённых настроек
+        if (musicSource != null)
+        {
+            float savedVolume = PlayerPrefs.GetFloat(VolumeKey, 1f);
+            musicSource.volume = savedVolume;
         }
     }
 
@@ -36,6 +49,10 @@ public class WinTrigger : MonoBehaviour
 
             winPanel.SetActive(true);
             StartCoroutine(FadeIn());
+
+            // если музыка реально играет (громкость > 0) → приглушаем
+            if (musicSource != null && musicSource.volume > 0f)
+                StartCoroutine(FadeOutMusic());
         }
     }
 
@@ -49,5 +66,34 @@ public class WinTrigger : MonoBehaviour
             yield return null;
         }
         canvasGroup.alpha = 1f;
+    }
+
+    private System.Collections.IEnumerator FadeOutMusic()
+    {
+        float startVolume = musicSource.volume;
+        float elapsed = 0f;
+
+        while (elapsed < fadeDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            musicSource.volume = Mathf.Lerp(startVolume, 0f, elapsed / fadeDuration);
+            yield return null;
+        }
+
+        musicSource.volume = 0f;
+    }
+
+    public void RestartScene()
+    {
+        Time.timeScale = 1f;
+
+        // при рестарте возвращаем музыку к сохранённому уровню
+        if (musicSource != null)
+        {
+            float savedVolume = PlayerPrefs.GetFloat(VolumeKey, 1f);
+            musicSource.volume = savedVolume;
+        }
+
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }

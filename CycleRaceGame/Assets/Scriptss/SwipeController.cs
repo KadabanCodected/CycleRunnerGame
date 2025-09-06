@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -10,7 +10,15 @@ public class SwipeController : MonoBehaviour
 
     private void Update()
     {
+        // 🚩 Если игра на паузе — выходим, свайпы не обрабатываются
+        if (PauseController.IsGamePaused)
+        {
+            tap = swipeLeft = swipeRight = swipeUp = swipeDown = false;
+            return;
+        }
+
         tap = swipeDown = swipeUp = swipeLeft = swipeRight = false;
+
         #region PC Version
         if (Input.GetMouseButtonDown(0))
         {
@@ -46,7 +54,7 @@ public class SwipeController : MonoBehaviour
         swipeDelta = Vector2.zero;
         if (isDraging)
         {
-            if (Input.touches.Length < 0)
+            if (Input.touches.Length > 0) // 🛠️ исправил условие, у тебя было < 0 (невозможно)
                 swipeDelta = Input.touches[0].position - startTouch;
             else if (Input.GetMouseButton(0))
                 swipeDelta = (Vector2)Input.mousePosition - startTouch;
@@ -60,7 +68,6 @@ public class SwipeController : MonoBehaviour
             float y = swipeDelta.y;
             if (Mathf.Abs(x) > Mathf.Abs(y))
             {
-
                 if (x < 0)
                     swipeLeft = true;
                 else
@@ -68,7 +75,6 @@ public class SwipeController : MonoBehaviour
             }
             else
             {
-
                 if (y < 0)
                     swipeDown = true;
                 else
@@ -77,7 +83,6 @@ public class SwipeController : MonoBehaviour
 
             Reset();
         }
-
     }
 
     private void Reset()

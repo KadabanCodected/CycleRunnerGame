@@ -9,6 +9,9 @@ public class Obstacle : MonoBehaviour
     [Header("UI References")]
     [SerializeField] private GameObject speedPanel;
 
+    [Header("Music Settings")]
+    [SerializeField] private AudioSource musicSource;
+
     private CanvasGroup canvasGroup;
     private bool isGameOver = false;
 
@@ -22,9 +25,8 @@ public class Obstacle : MonoBehaviour
             canvasGroup = gameOverPanel.GetComponent<CanvasGroup>();
 
             if (canvasGroup == null)
-            {
                 canvasGroup = gameOverPanel.AddComponent<CanvasGroup>();
-            }
+
             canvasGroup.alpha = 0f;
         }
     }
@@ -42,6 +44,9 @@ public class Obstacle : MonoBehaviour
 
             gameOverPanel.SetActive(true);
             StartCoroutine(FadeIn());
+
+            if (musicSource != null && musicSource.volume > 0f)
+                StartCoroutine(FadeOutMusic());
         }
     }
 
@@ -57,9 +62,23 @@ public class Obstacle : MonoBehaviour
         canvasGroup.alpha = 1f;
     }
 
+    private System.Collections.IEnumerator FadeOutMusic()
+    {
+        float startVolume = musicSource.volume;
+        float elapsed = 0f;
+
+        while (elapsed < fadeDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            musicSource.volume = Mathf.Lerp(startVolume, 0f, elapsed / fadeDuration);
+            yield return null;
+        }
+        musicSource.volume = 0f;
+    }
+
     public void RestartScene()
     {
-        Time.timeScale = 1f; 
+        Time.timeScale = 1f;
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }

@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using System.Collections; // для корутин
+using System.Collections;
 
 public class QuizManager : MonoBehaviour
 {
@@ -17,14 +17,20 @@ public class QuizManager : MonoBehaviour
     [Header("Player Reference")]
     public PlayerController player;
 
-    [Header("Speed Panel")]
-    [SerializeField] private GameObject speedPanel;
-
     [Header("Feedback Panel")]
-    [SerializeField] private GameObject feedbackPanel;  
-    [SerializeField] private TextMeshProUGUI feedbackText; 
-    [SerializeField] private float feedbackFadeDuration = 0.5f; 
-    [SerializeField] private float feedbackShowTime = 1.5f; 
+    [SerializeField] private GameObject feedbackPanel;
+    [SerializeField] private TextMeshProUGUI feedbackText;
+    [SerializeField] private float feedbackFadeDuration = 0.5f;
+    [SerializeField] private float feedbackShowTime = 1.5f;
+
+    [Header("UI Panel (new)")]
+    [SerializeField] private GameObject uiPanel;
+
+    [Header("Music Settings")]
+    public AudioSource musicSource;
+    private float lastKnownVolume = 1f;
+
+    private const string VolumeKey = "MusicVolume";
 
     private Level currentLevel;
     private QuestionData currentQuestion;
@@ -32,6 +38,13 @@ public class QuizManager : MonoBehaviour
 
     void Start()
     {
+        if (musicSource != null)
+        {
+            // всегда берём актуальную громкость из PlayerPrefs
+            lastKnownVolume = PlayerPrefs.GetFloat(VolumeKey, 1f);
+            musicSource.volume = lastKnownVolume;
+        }
+
         LoadLevel();
         ShowQuestion();
 
@@ -118,11 +131,11 @@ public class QuizManager : MonoBehaviour
                 feedbackText.text = "Incorrect\nSlowing Down!";
         }
 
-        if (speedPanel != null)
-            speedPanel.SetActive(true);
-
         if (quizCanvas != null)
             quizCanvas.SetActive(false);
+
+        // обновляем lastKnownVolume по PlayerPrefs (на случай если слайдер изменил громкость)
+        lastKnownVolume = PlayerPrefs.GetFloat(VolumeKey, 1f);
 
         if (feedbackPanel != null)
             StartCoroutine(ShowFeedbackAndResume());
@@ -153,6 +166,13 @@ public class QuizManager : MonoBehaviour
         }
         feedbackCanvasGroup.alpha = 0f;
         feedbackPanel.SetActive(false);
+
+        // возвращаем ту громкость, что была реально в настройках
+        if (musicSource != null && lastKnownVolume > 0f)
+            musicSource.volume = lastKnownVolume;
+
+        if (uiPanel != null)
+            uiPanel.SetActive(true);
 
         Time.timeScale = 1f;
     }
